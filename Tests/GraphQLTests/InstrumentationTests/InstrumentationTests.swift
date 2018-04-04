@@ -2,7 +2,7 @@ import Foundation
 import Dispatch
 import GraphQL
 import XCTest
-import Async
+import NIO
 
 class InstrumentationTests : XCTestCase, Instrumentation {
 

@@ -1,4 +1,4 @@
-import Async
+import NIO
 
 /// This is the primary entry point function for fulfilling GraphQL operations
 /// by parsing, validating, and executing a GraphQL document along side a
@@ -30,17 +30,17 @@ public func graphql(
     schema: GraphQLSchema,
     request: String,
     rootValue: Any = Void(),
-    worker: Worker,
+    worker: EventLoopGroup,
     variableValues: [String: Map] = [:],
     operationName: String? = nil
-) throws -> Future<Map> {
+) throws -> EventLoopFuture<Map> {
 
     let source = Source(body: request, name: "GraphQL request")
     let documentAST = try parse(instrumentation: instrumentation, source: source)
     let validationErrors = validate(instrumentation: instrumentation, schema: schema, ast: documentAST)
 
     guard validationErrors.isEmpty else {
-        return Future.map(on: worker) { ["errors": try validationErrors.asMap()] }
+        return worker.next().newSucceededFuture(result: ["errors": try validationErrors.asMap()])
     }
 
     return execute(
@@ -82,17 +82,17 @@ public func graphql<Retrieval:PersistedQueryRetrieval>(
     queryRetrieval: Retrieval,
     queryId: Retrieval.Id,
     rootValue: Any = Void(),
-    worker: Worker,
+    worker: EventLoopGroup,
     variableValues: [String: Map] = [:],
     operationName: String? = nil
-) throws -> Future<Map> {
+) throws -> EventLoopFuture<Map> {
     switch try queryRetrieval.lookup(queryId) {
     case .unknownId(_):
         throw GraphQLError(message: "Unknown query id")
     case .parseError(let parseError):
         throw parseError
     case .validateErrors(_, let validationErrors):
-        return Future.map(on: worker) { ["errors": try validationErrors.asMap()] }
+        return worker.next().newSucceededFuture(result: ["errors": try validationErrors.asMap()])
     case .result(let schema, let documentAST):
         return execute(
             queryStrategy: queryStrategy,

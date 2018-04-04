@@ -1,6 +1,6 @@
 import Foundation
 import Dispatch
-import Async
+import NIO
 
 /// Provides the capability to instrument the execution steps of a GraphQL query.
 ///
@@ -36,7 +36,7 @@ public protocol Instrumentation {
         schema: GraphQLSchema,
         document: Document,
         rootValue: Any,
-        worker: Worker,
+        worker: EventLoopGroup,
         variableValues: [String: Map],
         operation: OperationDefinition?,
         errors: [GraphQLError],
@@ -52,7 +52,7 @@ public protocol Instrumentation {
         args: Map,
         worker: Any,
         info: GraphQLResolveInfo,
-        result: ResultOrError<Future<Any?>, Error>
+        result: ResultOrError<EventLoopFuture<Any?>, Error>
     )
 
 }
@@ -84,8 +84,8 @@ struct noOpInstrumentation: Instrumentation {
     }
     public func queryValidation(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, schema: GraphQLSchema, document: Document, errors: [GraphQLError]) {
     }
-    public func operationExecution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, schema: GraphQLSchema, document: Document, rootValue: Any, worker: Worker, variableValues: [String : Map], operation: OperationDefinition?, errors: [GraphQLError], result: Map) {
+    public func operationExecution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, schema: GraphQLSchema, document: Document, rootValue: Any, worker: EventLoopGroup, variableValues: [String : Map], operation: OperationDefinition?, errors: [GraphQLError], result: Map) {
     }
-    public func fieldResolution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, source: Any, args: Map, worker: Any, info: GraphQLResolveInfo, result: ResultOrError<Future<Any?>, Error>) {
+    public func fieldResolution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, source: Any, args: Map, worker: Any, info: GraphQLResolveInfo, result: ResultOrError<EventLoopFuture<Any?>, Error>) {
     }
 }

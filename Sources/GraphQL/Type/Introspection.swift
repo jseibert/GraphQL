@@ -1,4 +1,4 @@
-import Async
+import NIO
 
 let __Schema = try! GraphQLObjectType(
     name: "__Schema",
@@ -11,35 +11,35 @@ let __Schema = try! GraphQLObjectType(
             type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
             description: "A list of all types supported by this server.",
             resolve: { schema, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let schema = schema as? GraphQLSchema else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
                 let typeMap = schema.typeMap
-                return Future.map(on: w) { Array(typeMap.values).sorted(by: { $0.name < $1.name }) }
+                return w.next().newSucceededFuture(result: Array(typeMap.values).sorted(by: { $0.name < $1.name }))
             }
         ),
         "queryType": GraphQLField(
             type: GraphQLNonNull(__Type),
             description: "The type that query operations will be rooted at.",
             resolve: { schema, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let schema = schema as? GraphQLSchema else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { schema.queryType }
+                return w.next().newSucceededFuture(result: schema.queryType)
             }
         ),
         "mutationType": GraphQLField(
@@ -48,17 +48,17 @@ let __Schema = try! GraphQLObjectType(
             "If this server supports mutation, the type that " +
             "mutation operations will be rooted at.",
             resolve: { schema, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let schema = schema as? GraphQLSchema else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { schema.mutationType }
+                return w.next().newSucceededFuture(result: schema.mutationType)
             }
         ),
         "subscriptionType": GraphQLField(
@@ -67,34 +67,34 @@ let __Schema = try! GraphQLObjectType(
             "If this server support subscription, the type that " +
             "subscription operations will be rooted at.",
             resolve: { schema, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let schema = schema as? GraphQLSchema else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { schema.subscriptionType }
+                return w.next().newSucceededFuture(result: schema.subscriptionType)
             }
         ),
         "directives": GraphQLField(
             type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),
             description: "A list of all directives supported by this server.",
             resolve: { schema, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let schema = schema as? GraphQLSchema else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { schema.directives }
+                return w.next().newSucceededFuture(result: schema.directives)
             }
         )
     ]
@@ -118,17 +118,17 @@ let __Directive = try! GraphQLObjectType(
         "args": GraphQLField(
             type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
             resolve: { directive, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let directive = directive as? GraphQLDirective else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { directive.args }
+                return w.next().newSucceededFuture(result: directive.args)
             }
         ),
         // NOTE: the following three fields are deprecated and are no longer part
@@ -137,55 +137,55 @@ let __Directive = try! GraphQLObjectType(
             type: GraphQLNonNull(GraphQLBoolean),
             deprecationReason: "Use `locations`.",
             resolve: { directive, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let d = directive as? GraphQLDirective else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { d.locations.contains(.query) ||
+                return w.next().newSucceededFuture(result: d.locations.contains(.query) ||
                     d.locations.contains(.mutation) ||
-                    d.locations.contains(.subscription) }
+                    d.locations.contains(.subscription))
             }
         ),
         "onFragment": GraphQLField(
             type: GraphQLNonNull(GraphQLBoolean),
             deprecationReason: "Use `locations`.",
             resolve: { directive, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let d = directive as? GraphQLDirective else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { d.locations.contains(.fragmentSpread) ||
+                return w.next().newSucceededFuture(result: d.locations.contains(.fragmentSpread) ||
                     d.locations.contains(.inlineFragment) ||
-                    d.locations.contains(.fragmentDefinition) }
+                    d.locations.contains(.fragmentDefinition))
             }
         ),
         "onField": GraphQLField(
             type: GraphQLNonNull(GraphQLBoolean),
             deprecationReason: "Use `locations`.",
             resolve: { directive, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let d = directive as? GraphQLDirective else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { d.locations.contains(.field) }
+                return w.next().newSucceededFuture(result: d.locations.contains(.field))
             }
         ),
     ]
@@ -287,7 +287,7 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
         "kind": GraphQLField(
             type: GraphQLNonNull(__TypeKind),
             resolve: { type, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
@@ -295,21 +295,21 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                 
                 switch type {
                 case let type as GraphQLScalarType:
-                    return Future.map(on: w) { TypeKind.scalar }
+                    return w.next().newSucceededFuture(result: TypeKind.scalar)
                 case let type as GraphQLObjectType:
-                    return Future.map(on: w) { TypeKind.object }
+                    return w.next().newSucceededFuture(result: TypeKind.object)
                 case let type as GraphQLInterfaceType:
-                    return Future.map(on: w) { TypeKind.interface }
+                    return w.next().newSucceededFuture(result: TypeKind.interface)
                 case let type as GraphQLUnionType:
-                    return Future.map(on: w) { TypeKind.union }
+                    return w.next().newSucceededFuture(result: TypeKind.union)
                 case let type as GraphQLEnumType:
-                    return Future.map(on: w) { TypeKind.enum }
+                    return w.next().newSucceededFuture(result: TypeKind.enum)
                 case let type as GraphQLInputObjectType:
-                    return Future.map(on: w) { TypeKind.inputObject }
+                    return w.next().newSucceededFuture(result: TypeKind.inputObject)
                 case let type as GraphQLList:
-                    return Future.map(on: w) { TypeKind.list }
+                    return w.next().newSucceededFuture(result: TypeKind.list)
                 case let type as GraphQLNonNull:
-                    return Future.map(on: w) { TypeKind.nonNull }
+                    return w.next().newSucceededFuture(result: TypeKind.nonNull)
                 default:
                     throw GraphQLError(message: "Unknown kind of type: \(type)")
                 }
@@ -326,7 +326,7 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                 )
             ],
             resolve: { type, arguments, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
@@ -340,7 +340,7 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                         fields = fields.filter({ !$0.isDeprecated })
                     }
                     
-                    return Future.map(on: w) { fields }
+                    return w.next().newSucceededFuture(result: fields)
                 }
 
                 if let type = type as? GraphQLInterfaceType {
@@ -351,42 +351,42 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                         fields = fields.filter({ !$0.isDeprecated })
                     }
 
-                    return Future.map(on: w) { fields }
+                    return w.next().newSucceededFuture(result: fields)
                 }
 
-                return Future.map(on: w) { nil }
+                return w.next().newSucceededFuture(result: nil)
             }
         ),
         "interfaces": GraphQLField(
             type: GraphQLList(GraphQLNonNull(GraphQLTypeReference("__Type"))),
             resolve: { type, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 if let type = type as? GraphQLObjectType {
-                    return Future.map(on: w) { type.interfaces }
+                    return w.next().newSucceededFuture(result: type.interfaces)
                 }
 
-                return Future.map(on: w) { nil }
+                return w.next().newSucceededFuture(result: nil)
             }
         ),
         "possibleTypes": GraphQLField(
             type: GraphQLList(GraphQLNonNull(GraphQLTypeReference("__Type"))),
             resolve: { type, args, worker, info in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 if let type = type as? GraphQLAbstractType {
-                    return Future.map(on: w) { info.schema.getPossibleTypes(abstractType: type) }
+                    return w.next().newSucceededFuture(result: info.schema.getPossibleTypes(abstractType: type))
                 }
 
-                return Future.map(on: w) { nil }
+                return w.next().newSucceededFuture(result: nil)
             }
         ),
         "enumValues": GraphQLField(
@@ -398,7 +398,7 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                 )
             ],
             resolve: { type, arguments, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
@@ -411,16 +411,16 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                         values = values.filter({ !$0.isDeprecated })
                     }
 
-                    return Future.map(on: w) { values }
+                    return w.next().newSucceededFuture(result: values)
                 }
 
-                return Future.map(on: w) { nil }
+                return w.next().newSucceededFuture(result: nil)
             }
         ),
         "inputFields": GraphQLField(
             type: GraphQLList(GraphQLNonNull(__InputValue)),
             resolve: { type, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
@@ -428,10 +428,10 @@ let __Type: GraphQLObjectType = try! GraphQLObjectType(
                 
                 if let type = type as? GraphQLInputObjectType {
                     let fieldMap = type.fields
-                    return Future.map(on: w) { Array(fieldMap.values).sorted(by: { $0.name < $1.name }) }
+                    return w.next().newSucceededFuture(result: Array(fieldMap.values).sorted(by: { $0.name < $1.name }))
                 }
 
-                return Future.map(on: w) { nil }
+                return w.next().newSucceededFuture(result: nil)
             }
         ),
         "ofType": GraphQLField(type: GraphQLTypeReference("__Type"))
@@ -449,17 +449,17 @@ let __Field = try! GraphQLObjectType(
         "args": GraphQLField(
             type: GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
             resolve: { field, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let field = field as? GraphQLFieldDefinition else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { field.args }
+                return w.next().newSucceededFuture(result: field.args)
             }
         ),
         "type": GraphQLField(type: GraphQLNonNull(GraphQLTypeReference("__Type"))),
@@ -484,21 +484,21 @@ let __InputValue = try! GraphQLObjectType(
             "A GraphQL-formatted string representing the default value for this " +
             "input value.",
             resolve: { inputValue, _, worker, _ in
-                guard let w = worker as? Worker else {
+                guard let w = worker as? EventLoopGroup else {
                     throw GraphQLError(
                         message: "Provided worker is not actually a worker."
                     )
                 }
                 
                 guard let inputValue = inputValue as? GraphQLArgumentDefinition else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
                 guard let defaultValue = inputValue.defaultValue else {
-                    return Future.map(on: w) { nil }
+                    return w.next().newSucceededFuture(result: nil)
                 }
 
-                return Future.map(on: w) { defaultValue }
+                return w.next().newSucceededFuture(result: defaultValue)
             }
         )
     ]
@@ -592,13 +592,13 @@ let SchemaMetaFieldDef = GraphQLFieldDefinition(
     type: GraphQLNonNull(__Schema),
     description: "Access the current type schema of this server.",
     resolve: { _, _, worker, info in
-        guard let w = worker as? Worker else {
+        guard let w = worker as? EventLoopGroup else {
             throw GraphQLError(
                 message: "Provided worker is not actually a worker."
             )
         }
         
-        return Future.map(on: w) { info.schema }
+        return w.next().newSucceededFuture(result: info.schema)
     }
 )
 
@@ -613,14 +613,14 @@ let TypeMetaFieldDef = GraphQLFieldDefinition(
         )
     ],
     resolve: { _, arguments, worker, info in
-        guard let w = worker as? Worker else {
+        guard let w = worker as? EventLoopGroup else {
             throw GraphQLError(
                 message: "Provided worker is not actually a worker."
             )
         }
         
         let name = arguments["name"].string!
-        return Future.map(on: w) { info.schema.getType(name: name) }
+        return w.next().newSucceededFuture(result: info.schema.getType(name: name))
     }
 )
 
@@ -629,12 +629,12 @@ let TypeNameMetaFieldDef = GraphQLFieldDefinition(
     type: GraphQLNonNull(GraphQLString),
     description: "The name of the current Object type at runtime.",
     resolve: { _, _, worker, info in
-        guard let w = worker as? Worker else {
+        guard let w = worker as? EventLoopGroup else {
             throw GraphQLError(
                 message: "Provided worker is not actually a worker."
             )
         }
         
-        return Future.map(on: w) { info.parentType.name }
+        return w.next().newSucceededFuture(result: info.parentType.name)
     }
 )

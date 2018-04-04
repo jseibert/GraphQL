@@ -10,13 +10,11 @@ let package = Package(
 
     dependencies: [
         .package(url: "https://github.com/jseibert/Runtime.git", .branch("master")),
-
-        // ⏱ Promises and reactive-streams in Swift built for high-performance and scalability.
-        .package(url: "https://github.com/vapor/core.git", from: "3.0.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "1.3.0"),
     ],
 
     targets: [
-        .target(name: "GraphQL", dependencies: ["Runtime", "Async"]),
+        .target(name: "GraphQL", dependencies: ["Runtime", "NIO"]),
 
         .testTarget(name: "GraphQLTests", dependencies: ["GraphQL"]),
     ]

@@ -1,5 +1,5 @@
 import Dispatch
-import Async
+import NIO
 
 /// Proxies calls through to another `Instrumentation` instance via a DispatchQueue
 ///
@@ -40,13 +40,13 @@ public class DispatchQueueInstrumentationWrapper: Instrumentation {
         }
     }
 
-    public func operationExecution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, schema: GraphQLSchema, document: Document, rootValue: Any, worker: Worker, variableValues: [String : Map], operation: OperationDefinition?, errors: [GraphQLError], result: Map) {
+    public func operationExecution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, schema: GraphQLSchema, document: Document, rootValue: Any, worker: EventLoopGroup, variableValues: [String : Map], operation: OperationDefinition?, errors: [GraphQLError], result: Map) {
         dispatchQueue.async(group: dispatchGroup) {
             self.instrumentation.operationExecution(processId: processId, threadId: threadId, started: started, finished: finished, schema: schema, document: document, rootValue: rootValue, worker: worker, variableValues: variableValues, operation: operation, errors: errors, result: result)
         }
     }
 
-    public func fieldResolution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, source: Any, args: Map, worker: Any, info: GraphQLResolveInfo, result: ResultOrError<Future<Any?>, Error>) {
+    public func fieldResolution(processId: Int, threadId: Int, started: DispatchTime, finished: DispatchTime, source: Any, args: Map, worker: Any, info: GraphQLResolveInfo, result: ResultOrError<EventLoopFuture<Any?>, Error>) {
         dispatchQueue.async(group: dispatchGroup) {
             self.instrumentation.fieldResolution(processId: processId, threadId: threadId, started: started, finished: finished, source: source, args: args, worker: worker, info: info, result: result)
         }

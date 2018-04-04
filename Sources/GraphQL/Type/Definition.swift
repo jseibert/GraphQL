@@ -1,4 +1,4 @@
-import Async
+import NIO
 
 /**
  * These are all of the possible kinds of types.
@@ -451,7 +451,7 @@ public typealias GraphQLFieldResolve = (
     _ args: Map,
     _ worker: Any,
     _ info: GraphQLResolveInfo
-) throws -> Future<Any?>
+) throws -> EventLoopFuture<Any?>
 
 public struct GraphQLResolveInfo {
     public let fieldName: String

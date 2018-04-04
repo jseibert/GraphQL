@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "Core",
-        "repositoryURL": "https://github.com/vapor/core.git",
-        "state": {
-          "branch": null,
-          "revision": "225aff2b69049f2a4d9a4aae71d27ba7fb083032",
-          "version": "3.0.1"
-        }
-      },
-      {
         "package": "Runtime",
         "repositoryURL": "https://github.com/jseibert/Runtime.git",
         "state": {
