@@ -11,7 +11,7 @@ func locatedError(originalError: Error, nodes: [Node], path: [IndexPathElement])
     }
 
     return GraphQLError(
-        message: String(describing: originalError),
+        message: originalError.localizedDescription,
         nodes: nodes,
         path: path,
         originalError: originalError
